@@ -64,5 +64,62 @@ namespace SalesWebMvc.Controllers
             return RedirectToAction(nameof(Index));
 
         }
+
+        public IActionResult Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var obj = _sellerService.FindById(id.Value);
+            if (obj == null)
+            {
+                return NotFound();
+            }
+            return View(obj);
+        }
+
+        public IActionResult Edit(int? id)
+        {
+            if(id == null)
+            {
+                return NotFound();
+            }
+            var obj = _sellerService.FindById(id.Value);
+            if (obj == null)
+            {
+                return NotFound();
+            }
+
+            var departament = _departamentService.FindAll();
+            var viewModel = new SellerFormViewModelcs { Seller = obj, Departaments = departament };
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(int id,SellerFormViewModelcs sellerForm)
+        {
+            if(id != sellerForm.Seller.Id)
+            {
+                return BadRequest();
+            }
+            try
+            {
+                _sellerService.Update(sellerForm.Seller);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (NotFoundException)
+            {
+                return NotFound();
+                     
+            }
+            catch (DbConcurrencyException)
+            {
+                return BadRequest();
+            }
+           
+        }
+
     }
 }
